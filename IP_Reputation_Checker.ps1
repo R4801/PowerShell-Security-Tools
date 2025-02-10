@@ -1,9 +1,9 @@
 # List of IP addresses to be checked
-$ip_addresses = @("101.47.45.155", "116.31.248.180", "122.183.248.102")
+$ip_addresses = @("", "", "")
 
 # List of API keys (rotate when one is depleted)
-$VT_api = @("500f8036b4caed4e3ed4d7cde38ec2cf3410a2cf622828a92fbf6b90f40bb141",
-            "d8142a6f9bd9a1af434e30e1b27011ebcc0141aaee467b99ed8f339d3556caae") 
+$VT_api = @("",
+            "") 
 
 # Initialize API index to start with the first API key
 $api_index = 0
