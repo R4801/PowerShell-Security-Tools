@@ -1,28 +1,70 @@
-#$ip_add = Read-Host "Enter the IP addresses separated by commas : "
-$ip_add = @("78.109.200.147","59.173.135.46","98.51.132.203") 
+# List of IP addresses to be checked
+$ip_addresses = @("101.47.45.155", "116.31.248.180", "122.183.248.102")
 
+# List of API keys (rotate when one is depleted)
+$VT_api = @("500f8036b4caed4e3ed4d7cde38ec2cf3410a2cf622828a92fbf6b90f40bb141",
+            "d8142a6f9bd9a1af434e30e1b27011ebcc0141aaee467b99ed8f339d3556caae") 
 
-$VT_api = "" #insert your api here
-$VT_headers = @{"accept"="Application/JSON"; "x-apikey"="$VT_api"}
+# Initialize API index to start with the first API key
+$api_index = 0
 
+# Function to check IP address using VirusTotal API
+function CheckAddress {
+    param (
+        $ip_address,  # IP to check
+        $header      # API headers
+    )
 
+    # Construct VirusTotal API endpoint
+    $VT_path = "https://www.virustotal.com/api/v3/ip_addresses/$ip_address"
 
-foreach ($address in $ip_add) {
+    # Send request to VirusTotal API and parse response
+    $VT_response = Invoke-WebRequest -Method Get -Uri $VT_path -Headers $header | ConvertFrom-Json
 
-    $VT_path = "https://www.virustotal.com/api/v3/ip_addresses/$address"
-    $VT_response = Invoke-WebRequest -Method Get -Uri $VT_path -Headers $VT_headers |ConvertFrom-Json
-    $AVs = @()
+    # Extract total malicious detections
     $total_flags = $VT_response.data.attributes.last_analysis_stats.malicious
+
+    # If malicious detections are found, list the detecting vendors
     if ($total_flags) {
-        
+        $AVs = @()
         foreach ($property in $VT_response.data.attributes.last_analysis_results.PSobject.Properties) {
-            
             if ($property.Value.category -eq "malicious") {
                 $AVs += $property.Name
             }
         }
 
-        Write-Host "$address is flagged Malicious by $total_flags scanners: $($AVs -join ", ")"
+        # Display results
+        Write-Host "$ip_address is flagged Malicious by $total_flags scanners: $($AVs -join ', ')"
+    }
 
+    
+}
+
+# Loop through each IP address
+foreach ($ip_address in $ip_addresses) {
+    try {
+        # Set API headers for the current API key
+        $VT_headers = @{"accept"="Application/JSON"; "x-apikey"="$($VT_api[$api_index])"}
+
+        # Check the IP address
+        CheckAddress $ip_address $VT_headers
+
+    } catch {
+        Write-Host "API Key $($VT_api[$api_index]) exhausted. Switching to next API key..."
+        
+        # Move to the next API key
+        $api_index++
+
+        # If all API keys are exhausted, stop execution
+        if ($api_index -ge $VT_api.Count) {
+            Write-Host "All API keys have been exhausted. Stopping script."
+            break
+        }
+
+        # Set new API headers with the next API key
+        $VT_headers = @{"accept"="Application/JSON"; "x-apikey"="$($VT_api[$api_index])"}
+
+        # Retry checking the current IP with the new API key
+        CheckAddress $ip_address $VT_headers
     }
 }
