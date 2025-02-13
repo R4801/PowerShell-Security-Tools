@@ -1,12 +1,47 @@
-# List of IP addresses to be checked
-$ip_addresses = @("", "", "")
+#Comment out below lines of code if the program is to run indepently
+param (
+    [string[]]$artifacts = @(),  # Default artifacts
+    [string]$api = ""  # Default API key
+)
 
 # List of API keys (rotate when one is depleted)
-$VT_api = @("",
-            "") 
+$VT_api = @("") 
+if ($api) {
+    $VT_api+=$api
+}
+
+# List of IP addresses to be checked; Remove the comment if you want to use this 
+$ip_addresses = @("")
+$hashes = @()
+$domains = @()
+$unknownArtifacts = @()
+
+if ($artifacts){
+
+    foreach ($artifact in $artifacts) {
+        if ($artifact -match "^(?:\d{1,3}\.){3}\d{1,3}$") {
+            $ip_addresses += $artifact
+        }
+        elseif ($artifact -match "^(?=.{1,253}$)([a-zA-Z0-9][-a-zA-Z0-9]{0,62}\.)+[a-zA-Z]{2,63}$") {
+            $domains += $artifact
+        }
+        elseif ($artifact -match "^[a-fA-F0-9]{32}$" -or $artifact -match "^[a-fA-F0-9]{40}$" -or $artifact -match "^[a-fA-F0-9]{64}$") {
+            $hashes += $artifact
+        }
+        else {
+            $unknownArtifacts += $artifact
+        }
+    }
+}
+
+
+
+
+
 
 # Initialize API index to start with the first API key
 $api_index = 0
+
 
 # Function to check IP address using VirusTotal API
 function CheckAddress {
@@ -40,12 +75,14 @@ function CheckAddress {
     
 }
 
-# Loop through each IP address
+#Going through IP Addresses
+if ($ip_addresses) {
+    # Loop through each IP address
 foreach ($ip_address in $ip_addresses) {
     try {
         # Set API headers for the current API key
         $VT_headers = @{"accept"="Application/JSON"; "x-apikey"="$($VT_api[$api_index])"}
-
+        Write-Host $ip_address
         # Check the IP address
         CheckAddress $ip_address $VT_headers
 
@@ -67,4 +104,5 @@ foreach ($ip_address in $ip_addresses) {
         # Retry checking the current IP with the new API key
         CheckAddress $ip_address $VT_headers
     }
+}
 }
