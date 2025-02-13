@@ -74,7 +74,7 @@ function CheckAddress {
         }
 
         # Display results
-        Write-Host "$ip_address is flagged Malicious by $total_flags scanners: $($AVs -join ', ') `n`n"
+        Write-Host "`n$ip_address is flagged Malicious by $total_flags scanners: $($AVs -join ', ') `n`n"
     }else{Write-Host "$ip_address was not flagged by any Security Vendor`n`n"}
 
     
