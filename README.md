@@ -31,23 +31,30 @@ cd PowerShell-Security-Tools
 ```powershell
 # Define the artifacts (IOCs) to be scanned and the VirusTotal API key for lookup
 param (
-    [string[]]$artifacts = @(),  #<<<---- Enter your IOCs seperated by commas here. Example @("hash","hash","IPAddress""IPAddress")
+    [string[]]$artifacts = @("1.1.1.1", "example.com", "abcd1234hash")  # Add IPs, domains, or hashes here
     [string]$api = ""  # Default API key; Add your API here or in the $VT_api list for multiple API
 )
 
 # List of VirusTotal API keys (used in rotation when rate limits are reached)
 # Add your API keys here if they are not provided as a runtime parameter.
-[string[]]$VT_api = @()    #<<<---- Enter your APIs seperated by commas here. Example: @("api1")
+[string[]]$VT_api = @("YOUR_API_KEY_1", "YOUR_API_KEY_2")  # Add API keys here 
 ```
 ## **Requirements** 📌🖥️
 
 - 🖥️ PowerShell 5.1 or later.
 - 🔐 A valid VirusTotal API key.
 
+## **⚠️ Disclaimer**
+This project was created as part of my learning process with PowerShell. While it functions as an IOC analysis tool, it might not be suitable for day-to-day tasks due to security concerns, such as requiring an unrestricted ExecutionPolicy in Windows, which is not a best practice. However, I am working on making this script cross-platform friendly so it can run smoothly in Bash and macOS.
+
 ## **Roadmap** 📅🔄
 
 - ✅ Support for Hash and IP address scanning.
 
 - ⏳ Domain scanning support (coming soon).
+
+## **🤝 Contributions & Feedback**
+
+Contributions are welcome! Feel free to fork, submit PRs, or open issues.
 
 
